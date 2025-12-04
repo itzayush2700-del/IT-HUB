@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Courses Hub - Dynamic Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. Base & Global Styles (Desktop First) --- */
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #e9ecef;
+            color: #343a40; 
+        }
+        
+        /* Header & Navigation */
+        header { 
+            background-color: #007bff;
+            color: white; 
+            text-align: center; 
+            padding: 2.5rem 1rem; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        h1 { 
+            font-size: 2.5rem; 
+            margin-bottom: 0.5rem; 
+        }
+        nav { 
+            background-color: #343a40;
+            padding: 1rem 0; 
+            text-align: center;
+        }
+        nav a { 
+            color: white; 
+            margin: 0 1rem; 
+            text-decoration: none; 
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            transition: color 0.3s ease, background-color 0.3s ease;
+            border-radius: 4px;
+            /* Added display: inline-block for better mobile tapping area */
+            display: inline-block; 
+        }
+        nav a:hover { 
+            color: #007bff;
+            background-color: white; 
+            text-decoration: none;
+        }
+        
+        /* Main Content Sections */
+        section { 
+            padding: 3rem; 
+            margin: 2rem auto; 
+            max-width: 1200px;
+            background-color: white; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        section:hover {
+            transform: translateY(-5px);
+        }
+        h2 { 
+            color: #007bff;
+            border-bottom: 3px solid #007bff; 
+            padding-bottom: 0.5rem; 
+            margin-top: 0;
+            font-weight: 700;
+        }
+        
+        /* Course Lists and Links */
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+        li { 
+            margin: 1rem 0; 
+            background-color: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border-left: 5px solid #28a745;
+        }
+        li a {
+            color: #343a40;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        li a:hover {
+            color: #28a745;
+        }
+
+        /* iFrame/Viewer Styles */
+        iframe { 
+            width: 100%; 
+            height: 500px; 
+            border: 1px solid #ced4da;
+            border-radius: 8px; 
+            margin-top: 1.5rem;
+        }
+        
+        /* PDF Section */
+        .pdf-section { 
+            background-color: #fff3cd;
+            border: 2px dashed #ffc107;
+        }
+        .viewer-controls { 
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem; 
+            justify-content: center;
+            /* Added flex-wrap for mobile responsiveness */
+            flex-wrap: wrap; 
+        }
+        .viewer-controls button { 
+            padding: 0.75rem 1.5rem; 
+            background-color: #dc3545;
+            color: white; 
+            border: none; 
+            border-radius: 50px;
+            cursor: pointer; 
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        
+        /* Footer */
+        footer { 
+            text-align: center; 
+            padding: 1.5rem; 
+            background-color: #343a40; 
+            color: white; 
+            margin-top: 2rem;
+        }
+
+        /* --- 2. Mobile Responsiveness (Media Queries) --- */
+        /* Targets screen widths 768px and smaller (typical tablet/mobile) */
+        @media (max-width: 768px) {
+            
+            /* General Sizing Adjustments */
+            header {
+                padding: 1.5rem 0.5rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            section {
+                padding: 1.5rem;
+                margin: 1rem auto;
+            }
+            
+            /* Navigation Adjustments for Mobile */
+            nav {
+                padding: 0.5rem 0;
+                /* Allow links to wrap to the next line */
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            nav a {
+                /* Reduced margin and padding for tighter fit */
+                margin: 0.25rem 0.5rem;
+                padding: 0.5rem 0.75rem;
+                /* Ensure links take up full width if needed, but flex will handle wrapping */
+                flex-basis: auto; 
+            }
+
+            /* PDF Viewer Controls Adjustments for Mobile */
+            .viewer-controls {
+                gap: 0.5rem;
+                /* Forces buttons to stack two per row or wrap nicely */
+                justify-content: space-around; 
+            }
+            .viewer-controls button {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+                /* Allow button to flex in size based on content */
+                flex-grow: 1; 
+                min-width: 120px;
+            }
+
+            /* iFrame Size Reduction for Mobile */
+            iframe {
+                height: 300px; /* Shorter height on mobile */
+            }
+        }
+        /* --- End Media Queries --- */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>💻 IT Courses Hub</h1>
+        <p>Explore high-demand courses on **Web Design**, **Python**, **IT Tools**, and **IoT** with top online resources and free, easy-to-read PDFs.</p>
+    </header>
+    <nav>
+        <a href="#web-design">Web Design</a>
+        <a href="#python">Python</a>
+        <a href="#it-tools">IT Tools</a>
+        <a href="#iot">IoT</a>
+        <a href="#pdfs">Free PDFs 📚</a>
+    </nav>
+
+    <section id="web-design">
+        <h2>🌐 Web Design Course</h2>
+        <p>Learn **HTML**, **CSS**, **JavaScript**, and responsive design essentials. Dive into modern front-end development with these curated resources:</p>
+        <ul>
+            <li class="resource-item"><a href="https://www.w3schools.com/html/" target="_blank">W3Schools HTML Tutorial (Get Started)</a></li>
+            <li class="resource-item"><a href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank">MDN Web Docs - Comprehensive HTML Reference</a></li>
+            <li class="resource-item"><a href="https://css-tricks.com/" target="_blank">CSS-Tricks (Advanced CSS Techniques)</a></li>
+        </ul>
+        <iframe src="https://www.w3schools.com/html/default.asp" title="Web Design Tutorial"></iframe>
+    </section>
+
+    <section id="python">
+        <h2>🐍 Python Course</h2>
+        <p>Master **Python programming** from basics to advanced topics like data structures and frameworks. Start your journey into coding and automation:</p>
+        <ul>
+            <li class="resource-item"><a href="https://docs.python.org/3/tutorial/" target="_blank">Official Python Tutorial (The Source)</a></li>
+            <li class="resource-item"><a href="https://www.codecademy.com/learn/learn-python-3" target="_blank">Codecademy Python 3 Course</a></li>
+            <li class="resource-item"><a href="https://www.khanacademy.org/computing/computer-programming/python" target="_blank">Khan Academy Python for Beginners</a></li>
+        </ul>
+        <iframe src="https://docs.python.org/3/tutorial/index.html" title="Python Tutorial"></iframe>
+    </section>
+
+    <section id="it-tools">
+        <h2>⚙️ IT Tools Course</h2>
+        <p>Explore essential IT tools and DevOps practices: **Git**, **Docker**, and modern cloud services. Skills crucial for today's tech environment:</p>
+        <ul>
+            <li class="resource-item"><a href="https://git-scm.com/doc" target="_blank">Git Documentation & Tutorials</a></li>
+            <li class="resource-item"><a href="https://docs.docker.com/get-started/" target="_blank">Docker Get Started Guide</a></li>
+            <li class="resource-item"><a href="https://aws.amazon.com/getting-started/" target="_blank">AWS Cloud Getting Started</a></li>
+        </ul>
+        <iframe src="https://git-scm.com/book/en/v2" title="Git Book"></iframe>
+    </section>
+
+    <section id="iot">
+        <h2>💡 IoT Course</h2>
+        <p>Dive into the **Internet of Things**! Learn about embedded systems, hardware integration (like Raspberry Pi and Arduino), and network connectivity:</p>
+        <ul>
+            <li class="resource-item"><a href="https://www.raspberrypi.org/documentation/" target="_blank">Raspberry Pi Official Documentation</a></li>
+            <li class="resource-item"><a href="https://www.arduino.cc/en/Tutorial/HomePage" target="_blank">Arduino Home Page & Tutorials</a></li>
+            <li class="resource-item"><a href="https://iot.mozilla.org/" target="_blank">Mozilla IoT Project</a></li>
+        </ul>
+        <iframe src="https://www.raspberrypi.org/documentation/" title="IoT Resources"></iframe>
+    </section>
+
+    <section id="pdfs" class="pdf-section">
+        <h2>📚 Free PDF Materials - Interactive Viewer</h2>
+        <p>Select a PDF below to view it instantly in our **easy-to-read embedded viewer**. Use the controls to manage your viewing experience.</p>
+        <div class="viewer-controls">
+            <button onclick="zoomIn()">➕ Zoom In</button>
+            <button onclick="zoomOut()">➖ Zoom Out</button>
+            <button onclick="fullScreen()">🖼️ Full Screen</button>
+            <button onclick="resetView()">🔄 Reset View</button>
+        </div>
+        <div class="pdf-viewer">
+            <iframe id="pdfViewer" src="https://git-scm.com/book/en/v2/book.pdf" title="PDF Viewer" allowfullscreen></iframe>
+        </div>
+        <p>Available Course Companion PDFs (Click to view or use the download link):</p>
+        <ul>
+            <li><a href="#" onclick="loadPDF('https://www.w3.org/TR/html5/')" data-name="HTML5 Specification">HTML5 Specification</a> | <a href="https://www.w3.org/TR/html5/" target="_blank" download>Download PDF</a></li>
+            <li><a href="#" onclick="loadPDF('https://docs.python.org/3/archives/python-3.9.0-docs-pdf-letter.zip')" data-name="Python 3.9 Docs">Python 3.9 Docs</a> | <a href="https://docs.python.org/3/archives/python-3.9.0-docs-pdf-letter.zip" target="_blank" download>Download PDF</a></li>
+            <li><a href="#" onclick="loadPDF('https://git-scm.com/book/en/v2/book.pdf')" data-name="Pro Git Book">Pro Git Book</a> | <a href="https://git-scm.com/book/en/v2/book.pdf" target="_blank" download>Download PDF</a></li>
+            <li><a href="#" onclick="loadPDF('https://www.raspberrypi.org/documentation/raspbian/')" data-name="Raspberry Pi Guide">Raspberry Pi Guide</a> | <a href="https://www.raspberrypi.org/documentation/raspbian/" target="_blank" download>Download PDF</a></li>
+        </ul>
+        <p>Note: PDFs are sourced from free, public repositories. Viewer settings are designed for optimal readability.</p>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 IT Courses Hub. | All resources are public domain or freely sourced from the internet. | Happy Learning! ✨</p>
+    </footer>
+
+    <script>
+        // Smooth Scrolling (Enhanced)
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if (this.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if(targetElement) {
+                         // Scroll to the element
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+
+                        // Optional: Add a subtle highlight/pulse effect to the section
+                        targetElement.style.boxShadow = '0 0 30px rgba(0, 123, 255, 0.5)';
+                        setTimeout(() => {
+                            targetElement.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
+                        }, 1000);
+                    }
+                }
+            });
+        });
+
+        // PDF Viewer Controls (Dynamic)
+        let zoomLevel = 1.0;
+        const viewer = document.getElementById('pdfViewer');
+
+        function loadPDF(url) {
+            viewer.src = url;
+            zoomLevel = 1.0;
+            viewer.style.transform = `scale(${zoomLevel})`; 
+
+            const linkText = event.target.getAttribute('data-name');
+            viewer.title = linkText + ' Viewer';
+            
+            event.preventDefault(); 
+        }
+
+        function zoomIn() {
+            if (zoomLevel < 3.0) {
+                zoomLevel += 0.2;
+                viewer.style.transform = `scale(${zoomLevel})`;
+            }
+        }
+
+        function zoomOut() {
+            if (zoomLevel > 0.4) {
+                zoomLevel -= 0.2;
+                viewer.style.transform = `scale(${zoomLevel})`;
+            }
+        }
+
+        function fullScreen() {
+            if (viewer.requestFullscreen) {
+                viewer.requestFullscreen();
+            } else if (viewer.webkitRequestFullscreen) {
+                viewer.webkitRequestFullscreen();
+            } else if (viewer.msRequestFullscreen) {
+                viewer.msRequestFullscreen();
+            }
+        }
+
+        function resetView() {
+            zoomLevel = 1.0;
+            viewer.style.transform = `scale(${zoomLevel})`;
+        }
+        
+        // Initial PDF URL fix
+        document.addEventListener('DOMContentLoaded', () => {
+             viewer.src = 'https://git-scm.com/book/en/v2/book.pdf';
+        });
+
+    </script>
+</body>
+</html>
