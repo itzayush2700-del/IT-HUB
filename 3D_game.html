@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Continuous Mob Spawning 3D Shooter</title>
+    <style>
+        /* --- CORE STYLES --- */
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #111;
+            color: white;
+            font-family: monospace;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* --- GAME UI --- */
+        #game-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px;
+            border-radius: 5px;
+            font-size: small;
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid red;
+            border-radius: 50%;
+            z-index: 500;
+            pointer-events: none;
+        }
+
+        /* --- MOBILE/DESKTOP CONTROLS LAYOUT --- */
+        #controls-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 10px;
+        }
+
+        .control-pad {
+            display: grid;
+            grid-template-areas: 
+                ". up-fwd ." 
+                "left-turn up-vert right-turn" 
+                ". down-bwd .";
+            width: 150px;
+            height: 150px;
+        }
+        
+        #lateral-controls {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 150px;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        .control-button {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            line-height: 1;
+            min-width: 40px;
+        }
+        .control-button:active {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Main Pad Mapping */
+        #move-up-fwd { grid-area: up-fwd; }
+        #move-down-bwd { grid-area: down-bwd; }
+        #turn-left { grid-area: left-turn; }
+        #turn-right { grid-area: right-turn; }
+
+        #fire-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-size: 1.2em;
+            background-color: rgba(255, 0, 0, 0.7);
+            border: 3px solid white;
+        }
+        
+        /* --- 3D ENVIRONMENT SETUP --- */
+        .scene {
+            width: 100vw;
+            height: 100vh;
+            perspective: 800px; 
+            overflow: hidden;
+            cursor: crosshair; 
+        }
+
+        .world {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        /* --- THE FLOOR PLANE --- */
+        .floor {
+            width: 5000px; 
+            height: 5000px; 
+            background: repeating-linear-gradient(
+                45deg,
+                #333,
+                #333 100px,
+                #444 100px,
+                #444 200px
+            );
+            position: absolute;
+            left: -2500px; 
+            top: -2500px;
+            transform: rotateX(90deg) translateZ(0); 
+        }
+
+        /* --- 3D OBJECT (CUBE) STYLES --- */
+        .cube {
+            --cube-size: 80px;
+            width: var(--cube-size);
+            height: var(--cube-size);
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: opacity 0.3s, transform 0.1s; 
+        }
+
+        .face {
+            position: absolute;
+            width: var(--cube-size);
+            height: var(--cube-size);
+            opacity: 0.8;
+            border: 1px solid #000;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        .front { background-color: rgba(0, 150, 255, 0.9); transform: translateZ(40px); }
+        .back { background-color: rgba(255, 0, 0, 0.9); transform: rotateY(180deg) translateZ(40px); }
+        .right { background-color: rgba(0, 255, 0, 0.9); transform: rotateY(90deg) translateZ(40px); }
+        .left { background-color: rgba(150, 0, 255, 0.9); transform: rotateY(-90deg) translateZ(40px); }
+        .top { background-color: rgba(255, 255, 0, 0.9); transform: rotateX(90deg) translateZ(40px); }
+        .bottom { background-color: rgba(255, 100, 0, 0.9); transform: rotateX(-90deg) translateZ(40px); }
+
+        .enemy .front { background-color: #f00; }
+        .killed { opacity: 0.1; pointer-events: none; } 
+    </style>
+</head>
+<body>
+
+    <div id="game-info">
+        Kills: <span id="kill-count">0</span><br>
+        Enemies: <span id="enemy-count">0</span>
+    </div>
+    <div id="crosshair"></div>
+
+    <div class="scene" id="game-scene">
+        <div class="world">
+            
+            <div class="floor"></div>
+
+            </div>
+    </div>
+    
+    <div id="controls-container">
+        
+        <div class="control-pad">
+            <button class="control-button" id="move-up-fwd" data-key="w">Fwd/W</button>
+            <button class="control-button" id="turn-left" data-key="a">Turn L/A</button>
+            <button class="control-button" id="turn-right" data-key="d">Turn R/D</button>
+            <button class="control-button" id="move-down-bwd" data-key="s">Bwd/S</button>
+        </div>
+
+        <div id="lateral-controls">
+            <button class="control-button" id="move-up-vert" data-key="q">Up/Q</button>
+            <button class="control-button" id="move-down-vert" data-key="z">Down/Z</button>
+            <button class="control-button" id="move-left-strafe" data-key="e">Strafe L/E</button>
+            <button class="control-button" id="move-right-strafe" data-key="r">Strafe R/R</button>
+        </div>
+
+        <button class="control-button" id="fire-button">FIRE</button>
+    </div>
+
+    
+    <script>
+        // --- JAVASCRIPT GAME LOGIC ---
+
+        const world = document.querySelector('.world');
+        const scene = document.getElementById('game-scene');
+        const killCountDisplay = document.getElementById('kill-count');
+        const enemyCountDisplay = document.getElementById('enemy-count');
+        
+        // **State Variables**
+        let cameraZ = 0;        
+        let cameraX = 0;        
+        let cameraY = 0;
+        let cameraRotationY = 0; 
+        let kills = 0;
+        let enemyIDCounter = 0; // Used to give unique IDs to new enemies
+
+        // **Movement Constants**
+        const MOVEMENT_SPEED = 15;
+        const ROTATION_SPEED = 3; 
+        const VERTICAL_SPEED = 15; 
+        const ENEMY_MOVEMENT_SPEED = 5;
+        const BOUNDARY = 1000;
+
+        // **Spawning Constants**
+        const SPAWN_INTERVAL = 3000; // Spawn new enemy every 3 seconds (3000ms)
+        const SPAWN_DISTANCE = 1500; // Enemies spawn 1500px away from center
+
+        // **Enemy Data**
+        const ENEMY_Y_OFFSET = -40;
+        const enemyData = []; 
+
+        // **Input State**
+        const keysPressed = {};
+        let isShooting = false; 
+
+        const degToRad = (degrees) => degrees * (Math.PI / 180);
+
+        // --- NEW: SPAWNING LOGIC ---
+
+        function createEnemyElement(id, name) {
+            const cube = document.createElement('div');
+            cube.id = id;
+            cube.classList.add('cube', 'enemy');
+            
+            // Generate the six faces
+            const faces = ['front', 'back', 'right', 'left', 'top', 'bottom'];
+            faces.forEach(faceName => {
+                const face = document.createElement('div');
+                face.classList.add('face', faceName);
+                if (faceName === 'front') face.textContent = name;
+                cube.appendChild(face);
+            });
+            
+            world.appendChild(cube);
+            return cube;
+        }
+
+        function spawnEnemy() {
+            enemyIDCounter++;
+            const id = `enemy-${enemyIDCounter}`;
+            
+            // Randomly determine spawn position outside the main play area
+            const angle = Math.random() * 2 * Math.PI;
+            const spawnX = Math.round(SPAWN_DISTANCE * Math.cos(angle));
+            const spawnZ = Math.round(SPAWN_DISTANCE * Math.sin(angle));
+            
+            // Determine initial velocity (simple back-and-forth)
+            const vx = (Math.random() < 0.5 ? 1 : -1) * ENEMY_MOVEMENT_SPEED;
+            const vz = (Math.random() < 0.5 ? 1 : -1) * ENEMY_MOVEMENT_SPEED;
+
+            const newElement = createEnemyElement(id, `E${enemyIDCounter}`);
+            
+            // Add to the game state array
+            enemyData.push({ 
+                id: id, 
+                element: newElement, 
+                x: spawnX, 
+                z: spawnZ, 
+                vx: vx, 
+                vz: vz, 
+                isAlive: true 
+            });
+
+            enemyCountDisplay.textContent = enemyData.filter(e => e.isAlive).length;
+        }
+        
+        // Start the continuous spawning loop
+        setInterval(spawnEnemy, SPAWN_INTERVAL);
+
+        // --- INPUT AND GAME LOGIC (Retained from previous step) ---
+
+        const controlButtons = document.querySelectorAll('#controls-container button');
+        
+        document.addEventListener('keydown', (e) => {
+            keysPressed[e.key.toLowerCase()] = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            keysPressed[e.key.toLowerCase()] = false;
+        });
+        
+        function handlePressStart(e) {
+            e.preventDefault(); 
+            const key = e.currentTarget.dataset.key;
+            if (key) {
+                keysPressed[key] = true;
+            }
+            if (e.currentTarget.id === 'fire-button') {
+                isShooting = true;
+            }
+        }
+
+        function handlePressEnd(e) {
+            e.preventDefault();
+            const key = e.currentTarget.dataset.key;
+            if (key) {
+                keysPressed[key] = false;
+            }
+            if (e.currentTarget.id === 'fire-button') {
+                isShooting = false;
+            }
+        }
+
+        controlButtons.forEach(button => {
+            button.addEventListener('mousedown', handlePressStart);
+            button.addEventListener('touchstart', handlePressStart);
+            button.addEventListener('mouseup', handlePressEnd);
+            button.addEventListener('touchend', handlePressEnd);
+            button.addEventListener('touchcancel', handlePressEnd);
+        });
+
+        scene.addEventListener('mousedown', (e) => {
+            if (e.button === 0) { isShooting = true; }
+        });
+        scene.addEventListener('mouseup', () => {
+            isShooting = false;
+        });
+        scene.addEventListener('touchstart', (e) => {
+            if (e.target.closest('#controls-container') === null) { isShooting = true; }
+        });
+        scene.addEventListener('touchend', () => {
+            isShooting = false;
+        });
+        
+        function handleMovement() {
+            const rotationRad = degToRad(cameraRotationY);
+            let moveX = 0;
+            let moveZ = 0;
+            let moveY = 0;
+
+            if (keysPressed['a']) { cameraRotationY += ROTATION_SPEED; }
+            if (keysPressed['d']) { cameraRotationY -= ROTATION_SPEED; }
+
+            if (keysPressed['w']) {
+                moveX -= MOVEMENT_SPEED * Math.sin(rotationRad);
+                moveZ += MOVEMENT_SPEED * Math.cos(rotationRad);
+            }
+            if (keysPressed['s']) {
+                moveX += MOVEMENT_SPEED * Math.sin(rotationRad);
+                moveZ -= MOVEMENT_SPEED * Math.cos(rotationRad);
+            }
+            
+            if (keysPressed['e']) { 
+                moveX -= MOVEMENT_SPEED * Math.cos(rotationRad);
+                moveZ -= MOVEMENT_SPEED * Math.sin(rotationRad);
+            }
+            if (keysPressed['r']) { 
+                moveX += MOVEMENT_SPEED * Math.cos(rotationRad);
+                moveZ += MOVEMENT_SPEED * Math.sin(rotationRad);
+            }
+
+            if (keysPressed['q']) { moveY += VERTICAL_SPEED; }
+            if (keysPressed['z']) { moveY -= VERTICAL_SPEED; }
+            
+            cameraX += moveX;
+            cameraZ += moveZ;
+            cameraY += moveY;
+
+            world.style.transform = `
+                rotateY(${cameraRotationY}deg) 
+                translate3d(${-cameraX}px, ${-cameraY}px, ${-cameraZ}px) 
+            `;
+        }
+        
+        function updateEnemies() {
+            // Filter out dead enemies
+            const livingEnemies = enemyData.filter(e => e.isAlive);
+            
+            livingEnemies.forEach(enemy => {
+                // Simple boundary bounce (optional now that they spawn far away)
+                if (enemy.x > BOUNDARY || enemy.x < -BOUNDARY) { enemy.vx *= -1; }
+                if (enemy.z > BOUNDARY || enemy.z < -BOUNDARY) { enemy.vz *= -1; }
+                
+                // NEW: Make them slowly move towards the player (0,0) - a basic homing AI
+                const dx = -enemy.x;
+                const dz = -enemy.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                
+                // Normalize and apply velocity towards player
+                const speed = ENEMY_MOVEMENT_SPEED;
+                enemy.vx = (dx / distance) * speed;
+                enemy.vz = (dz / distance) * speed;
+
+                enemy.x += enemy.vx;
+                enemy.z += enemy.vz;
+
+                // Apply CSS transform
+                enemy.element.style.transform = `
+                    translate3d(${enemy.x}px, ${ENEMY_Y_OFFSET}px, ${enemy.z}px)
+                `;
+            });
+            
+            // Clean up killed enemies from the DOM to save resources
+            for (let i = enemyData.length - 1; i >= 0; i--) {
+                if (!enemyData[i].isAlive && enemyData[i].element.classList.contains('killed')) {
+                    // Remove from DOM and array
+                    enemyData[i].element.remove();
+                    enemyData.splice(i, 1);
+                }
+            }
+            enemyCountDisplay.textContent = livingEnemies.length;
+        }
+
+
+        function handleShooting() {
+            if (!isShooting) return;
+
+            const livingEnemyElements = document.querySelectorAll('.cube.enemy:not(.killed)');
+            let closestEnemyElement = null;
+            let minDistance = Infinity;
+
+            livingEnemyElements.forEach(enemy => {
+                const rect = enemy.getBoundingClientRect();
+                const enemyCenterX = rect.left + rect.width / 2;
+                const enemyCenterY = rect.top + rect.height / 2;
+                const viewportCenterX = window.innerWidth / 2;
+                const viewportCenterY = window.innerHeight / 2;
+                
+                const distanceX = enemyCenterX - viewportCenterX;
+                const distanceY = enemyCenterY - viewportCenterY;
+                const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestEnemyElement = enemy;
+                }
+            });
+
+            const HIT_THRESHOLD = 80; 
+            if (closestEnemyElement && minDistance < HIT_THRESHOLD) {
+                const dataIndex = enemyData.findIndex(e => e.id === closestEnemyElement.id);
+                if (dataIndex !== -1) {
+                    enemyData[dataIndex].isAlive = false;
+                }
+
+                closestEnemyElement.classList.add('killed');
+                kills++;
+                killCountDisplay.textContent = kills;
+            }
+        }
+
+
+        // --- The Game Loop ---
+        function gameLoop() {
+            handleMovement();
+            updateEnemies();
+            
+            if (isShooting) {
+                handleShooting();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Initialize with a few enemies and start the game
+        spawnEnemy();
+        spawnEnemy();
+        spawnEnemy();
+        gameLoop();
+    </script>
+
+</body>
+</html>
